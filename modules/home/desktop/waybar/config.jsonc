@@ -1,0 +1,284 @@
+// Waybar module layout
+//
+// PURPOSE: Defines bar placement, widgets and custom scripts for the portable desktop.
+// ROLE: Installed through modules/home/desktop/waybar/default.nix.
+// CUSTOMIZATION: Preserve widget command contracts when editing; validate JSONC after changes.
+
+{
+  "layer": "top",
+  "position": "top",
+  "height": 30,
+  "fixed-center": true,
+  "spacing": 5,
+
+  "modules-left": [
+    "group/machine"
+  ],
+
+  "modules-center": [
+    "group/center"
+  ],
+
+  "modules-right": [
+    "group/session"
+  ],
+
+
+
+  // -------------------------
+  // LEFT: machine information
+  // -------------------------
+
+  "group/machine": {
+    "orientation": "horizontal",
+    "modules": [
+      "group/capacity",
+      "group/batteries",
+      "group/compute",
+      "group/connectivity"
+    ]
+  },
+
+  "group/capacity": {
+    "orientation": "vertical",
+    "modules": [
+      "custom/battery-total"
+    ]
+  },
+
+  "custom/disk-free": {
+    "exec": "~/.config/waybar/disk-free.sh",
+    "interval": 30,
+    "tooltip": false
+  },
+
+  "custom/battery-total": {
+    "exec": "~/.config/waybar/battery-total.sh",
+    "interval": 10,
+    "tooltip": false
+  },
+
+  "disk": {
+    "path": ["/"],
+    "interval": 30,
+    "format": "{free:Gi}G",
+    "tooltip-format": "{used} used / {total}"
+  },
+
+  "group/batteries": {
+    "orientation": "vertical",
+    "modules": [
+      "battery#bat0",
+      "battery#bat1"
+    ]
+  },
+
+  "battery#bat0": {
+    "bat": "BAT0",
+    "format": "  {capacity}%",
+    "format-discharging": "▎{capacity}%",
+    "format-charging": "▎{capacity}% +",
+    "format-full": "  {capacity}%",
+    "tooltip-format": "BAT0: {capacity}%  {time}"
+  },
+
+  "battery#bat1": {
+    "bat": "BAT1",
+    "format": "  {capacity}%",
+    "format-discharging": "▎{capacity}%",
+    "format-charging": "▎{capacity}% +",
+    "format-full": "  {capacity}%",
+    "tooltip-format": "BAT1: {capacity}%  {time}"
+  },
+
+  "group/compute": {
+    "orientation": "vertical",
+    "modules": [
+      "group/compute-top",
+      "group/compute-bottom"
+    ]
+  },
+
+  "group/compute-top": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/disk-free",
+      "temperature",
+      "custom/vms"
+    ]
+  },
+
+  "group/compute-bottom": {
+    "orientation": "horizontal",
+    "modules": [
+      "memory",
+      "cpu"
+    ]
+  },
+
+  "cpu": {
+    "interval": 2,
+    "format": "CPU {usage}%"
+  },
+
+  "temperature": {
+    "interval": 2,
+    "format": "{temperatureC}°"
+  },
+
+  "memory": {
+    "interval": 3,
+    "format": "RAM {percentage}%"
+  },
+
+  "custom/vms": {
+    "exec": "sh -c 'n=$(virsh list --name 2>/dev/null | grep -c .); echo \"VM $n\"'",
+    "interval": 5,
+    "tooltip": false,
+    "on-click": "virt-manager"
+  },
+
+  "group/connectivity": {
+    "orientation": "vertical",
+    "modules": [
+      "custom/traffic",
+      "group/connectivity-bottom"
+    ]
+  },
+
+  "custom/traffic": {
+  "exec": "~/.config/waybar/network-traffic.sh",
+  "interval": 2,
+  "tooltip": false
+},
+
+  "group/connectivity-bottom": {
+    "orientation": "horizontal",
+    "modules": [
+      "network#wifi",
+      "custom/vpn",
+      "bluetooth"
+    ]
+  },
+
+  "network#wifi": {
+    "format-wifi": "Wi-Fi {signalStrength}%",
+    "format-ethernet": "Ethernet",
+    "format-disconnected": "Offline",
+    "tooltip-format-wifi": "{essid}\n{ipaddr}",
+    "on-click": "nm-connection-editor"
+  },
+
+  "custom/vpn": {
+    "exec": "sh -c 'if nmcli -t -f TYPE connection show --active | grep -q \"^vpn$\"; then echo \"VPN ✓\"; else echo \"VPN\"; fi'",
+    "interval": 5,
+    "tooltip": false
+  },
+
+  "bluetooth": {
+    "format": "BT",
+    "format-disabled": "BT",
+    "format-off": "BT",
+    "format-connected": "BT ✓",
+    "format-connected-battery": "BT {device_battery_percentage}%",
+    "on-click": "blueman-manager",
+    "tooltip-format-connected": "{num_connections} connected\n{device_enumerate}"
+  },
+
+
+  // -------------------------
+  // CENTER: current activity
+  // -------------------------
+
+  "group/center": {
+    "orientation": "vertical",
+    "modules": [
+      "hyprland/window",
+      "hyprland/workspaces"
+    ]
+  },
+
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 45,
+    "min-length": 45,
+    "align":0.5,
+    "justify": "center",
+    "separate-outputs": true
+  },
+
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "expand": true,
+
+    "persistent-workspaces": {
+      "*": 5
+    },
+    "format-icons": {
+      "active": "●",
+      "empty": "○",
+      "persistent": "○",
+      "default": "○"
+    }
+  },
+
+  // -------------------------
+  // RIGHT: session / identity
+  // -------------------------
+
+  "group/session": {
+    "orientation": "vertical",
+    "modules": [
+      "group/session-top",
+      "group/session-bottom"
+    ]
+  },
+
+  "group/session-top": {
+    "orientation": "horizontal",
+    "modules": [
+      "custom/notifications",
+      "clock#date"
+    ]
+  },
+    "clock#date":{
+    "format": "{:%A %d %B %Y}"
+  },
+
+  "group/session-bottom": {
+    "orientation": "horizontal",
+    "modules": [
+    "pulseaudio",
+    "custom/user",
+    "clock#time"
+    ]
+  },
+
+  "custom/notifications": {
+    "format": "●",
+    "tooltip": false,
+    "on-click": "swaync-client -t"
+  },
+
+  "pulseaudio": {
+    "format": "Vol {volume}%",
+    "format-muted": "Muted",
+    "min-length": 8,
+    "align": 0.0
+  },
+
+  "custom/user": {
+    "format": "dev",
+    "min-length": 6,
+    "align": 0.5,
+    "tooltip": false,
+    "on-click": "portable-session menu"
+  },
+
+  "clock#time": {
+    "format": "{:%H:%M}",
+    "min-length": 8,
+    "align": 1.0,
+    "tooltip": false
+  }
+}

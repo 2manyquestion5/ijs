@@ -1,0 +1,69 @@
+/* Waybar visual styling
+ * PURPOSE: Defines bar sizing, spacing and widget presentation.
+ * ROLE: The palette is generated separately and imported as theme.css.
+ * CUSTOMIZATION: Prefer palette changes in the reusable theme instead of duplicating colors here.
+ */
+
+@import "theme.css";
+
+* {
+  font-size: 10px;
+  min-height: 0;
+}
+
+window#waybar {
+  background: rgba(20, 20, 20, 0.78);
+}
+
+#machine,
+#center,
+#session {
+  padding: 0 6px;
+}
+
+#capacity,
+#batteries,
+#compute,
+#connectivity {
+  margin-right: 10px;
+}
+
+#workspaces {
+margin-left: 52px
+}
+
+#workspaces button {
+  padding: 0 4px;
+  min-height: 0;
+}
+
+#workspaces button.active {
+    color: @accent;
+}
+
+#window {
+  padding: 0 4px;
+}
+
+#session {
+  margin-left: 12px;
+  margin-right: 4px;
+}
+
+#session-bottom {
+  padding-left: 70px;
+}
+
+#custom-notifications,
+#custom-user,
+#clock {
+  padding: 0 4px;
+}
+
+#battery.critical {
+    color: @critical;
+}
+
+#network {
+    color: @healthy;
+}

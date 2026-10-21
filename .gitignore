@@ -1,0 +1,42 @@
+# Nix generated outputs
+/result
+/result-*
+# Editor/temporary material
+*.swp
+*.swo
+*~
+*.save
+*.bak
+# Local secrets and hardware configuration; include .example templates only.
+.env
+.env.*
+*.age
+*.key
+*.pem
+*.p12
+.direnv/
+.venv/
+secrets/
+private/
+/hosts/*/storage-local.nix
+/hosts/*/hardware-configuration.nix
+# VM images are never source-controlled
+*.qcow2
+*.raw
+*.vdi
+# Additional credentials and local environment files
+*.agekey
+*.p8
+*.pfx
+*.kdbx
+!.env.example
+
+# Local development state
+*.log
+*.qcow2
+*.img
+*.iso
+
+# Python-generated files
+__pycache__/
+*.pyc

@@ -1,0 +1,71 @@
+
+// =============================================================================
+// NIRI — INPUT CONFIGURATION
+// =============================================================================
+//
+// Purpose:
+//   Apply shared input preferences using native Niri settings.
+//
+// Shared preferences originate from:
+//   user/preferences/input.nix
+//
+// How generation works:
+//
+//   1. default.nix reads this file as a KDL template.
+//   2. The Nix input adapter imports preferences/input.nix.
+//   3. It generates Niri input and cursor configuration.
+//   4. The generated configuration replaces the marker below.
+//   5. Home Manager installs the completed file.
+//
+// Shared settings include:
+//
+//   - Natural touchpad scrolling
+//   - Natural mouse scrolling
+//   - Focus behavior
+//   - Scrolling unfocused windows
+//   - Hide pointer while typing
+//   - Hide pointer after 3000 ms
+//
+// Important:
+//   Not all user preferences require an explicit native setting.
+//   Some behavior may already be Niri's default.
+//
+// =============================================================================
+
+
+// =============================================================================
+// GENERATED SHARED INPUT SETTINGS
+// =============================================================================
+//
+// The adapter generates the required input and cursor blocks here.
+//
+// For example, the requested three-second pointer timeout should become:
+//
+//   cursor {
+//       hide-when-typing
+//       hide-after-inactive-ms 3000
+//   }
+//
+// Natural scrolling is generated separately for mouse and touchpad.
+//
+// Do not manually duplicate shared preferences outside this marker.
+
+// @SHARED_INPUT@
+
+
+// =============================================================================
+// NIRI-SPECIFIC INPUT SETTINGS
+// =============================================================================
+//
+// Add behavior here only when it is specific to Niri.
+//
+// Possible future additions:
+//   - Niri-specific device overrides
+//   - Special touchpad behavior
+//   - Tablet or drawing-device support
+//
+// IMPORTANT:
+//   Avoid creating duplicate top-level input or cursor sections
+//   without verifying Niri's merging behavior.
+//
+// Shared values should continue to originate from input.nix.

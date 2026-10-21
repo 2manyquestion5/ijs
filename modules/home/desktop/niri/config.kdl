@@ -1,0 +1,11 @@
+// Niri root configuration
+//
+// PURPOSE: Includes the generated bindings and input sections for the Niri session.
+// ROLE: Minimal native config; shared preferences are converted by the translator.
+// CUSTOMIZATION: Add compositor-only settings here, not personal keybinding duplicates.
+
+// Main Niri configuration.
+// Individual sections are generated and installed by Home Manager.
+
+include "bindings.kdl"
+include "input.kdl"

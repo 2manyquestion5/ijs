@@ -1,0 +1,83 @@
+
+// =============================================================================
+// NIRI — KEYBOARD BINDINGS
+// =============================================================================
+//
+// Purpose:
+//   Define the final Niri keyboard bindings.
+//
+// Shared user shortcuts originate from:
+//   user/preferences/bindings.nix
+//
+// How generation works:
+//
+//   1. default.nix reads this file as a KDL template.
+//   2. The Nix binding adapter imports the shared preferences.
+//   3. It translates semantic actions into Niri KDL.
+//   4. The generated bindings replace the marker below.
+//   5. Home Manager installs the completed configuration.
+//
+// Example translation:
+//
+//   Shared preference:
+//     windows.close = "SUPER+Q";
+//
+//   Generated Niri binding:
+//     Mod+Q { close-window; }
+//
+// Niri uses Mod as the compositor modifier, normally Super.
+//
+// Important:
+//   KDL does not evaluate Nix files directly.
+//   All translation occurs before Niri loads the configuration.
+//
+// =============================================================================
+
+
+binds {
+
+    // =========================================================================
+    // GENERATED SHARED USER BINDINGS
+    // =========================================================================
+    //
+    // This marker will be replaced with native Niri binding entries.
+    //
+    // Shared actions include:
+    //   - Application launchers
+    //   - Window navigation and movement
+    //   - Workspaces
+    //   - Session management
+    //   - Audio and media
+    //   - Screenshots
+    //
+    // Keep this marker inside the binds block.
+
+    // @SHARED_BINDINGS@
+
+
+    // =========================================================================
+    // NIRI-SPECIFIC BINDINGS
+    // =========================================================================
+    //
+    // Put interactions here that are unique to Niri.
+    //
+    // Examples of future actions:
+    //   - Special scrollable-column layouts
+    //   - Column width adjustments
+    //   - Overview-specific interactions
+    //
+    // The existing shared directional movement shortcuts will use
+    // native Niri column/window actions through the translator.
+    //
+    // Do not manually duplicate them here.
+
+
+    // =========================================================================
+    // FUTURE NIRI BINDINGS
+    // =========================================================================
+    //
+    // Additional Niri-only shortcuts can be added below when needed.
+    //
+    // Keep all shared keyboard preferences in preferences/bindings.nix.
+
+}
