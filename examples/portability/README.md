@@ -51,6 +51,9 @@ console to untrusted users. SSH is disabled, networking is restricted with no
 forwarded ports, and host folders and the host store are not mounted into the
 guest. A guest-specific Nix store image is prepared at launch; it can take time
 and substantial disk space. The guest root disk persists in `vm_state`.
+The store image stays read-only, with a guest-local writable overlay so Nix and
+Home Manager can initialize. That overlay uses the default tmpfs and is discarded
+on reboot; persistent in-guest package builds are outside this example's scope.
 
 Inside the VM, try:
 
@@ -84,9 +87,12 @@ checks the preserved Wayland commands without invoking `wl-copy`, and exercises
 checks integrated Home Manager activation and runs command/editor smoke tests.
 A successful evaluation or build alone does not demonstrate that the VM booted.
 
-Initial cloud validation covers evaluation of both compositions and isolated
-tmux behavior. Complete builds and VM runtime validation remain pending on a
-host with a standard Nix store and suitable virtualization support.
+Cloud validation covers evaluation of both compositions and isolated tmux
+behavior. A local VM test booted and reached console login, but Home Manager
+activation failed because the guest store was read-only. The configuration now
+enables the writable overlay, and the test prints service status and journals
+on activation failure. A successful local rerun of activation and the remaining
+smoke tests is still required; cloud builds remain limited by the relocated store.
 
 ## How composition works
 

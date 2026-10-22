@@ -12,13 +12,27 @@ pkgs.testers.runNixOSTest {
 
     machine.start()
     machine.wait_for_unit("multi-user.target")
-    machine.wait_for_unit("home-manager-example.service")
+    try:
+        machine.wait_for_unit("home-manager-example.service")
+    except Exception:
+        # A failed oneshot has a useful nonzero status; log it without asserting success.
+        for command in [
+            "systemctl --no-pager --full status home-manager-example.service",
+            "journalctl --boot --no-pager -u home-manager-example.service",
+            "journalctl --boot --no-pager -u nix-daemon.service -u register-nix-paths.service",
+        ]:
+            status, output = machine.execute(command + " 2>&1")
+            machine.log(f"{command} (exit {status})\n{output}")
+        raise
+    machine.wait_for_unit("register-nix-paths.service")
     machine.succeed("test -L /home/example/.config/tmux/tmux.conf")
     machine.succeed("test -L /home/example/.config/nvim/init.lua")
 
     def as_example(command):
         return machine.succeed("runuser -l example -c " + shlex.quote(command))
 
+    # Exercise the daemon as the same unprivileged user that Home Manager uses.
+    as_example("nix-store --query --requisites /run/current-system > /dev/null")
     for command in ["git --version", "tmux -V", "rg --version", "fd --version"]:
         as_example(command)
     as_example("nvim --headless '+lua assert(vim.fn.exists(\":Lazy\") == 2)' +qa")

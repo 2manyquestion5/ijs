@@ -24,6 +24,9 @@
     # Copy the guest's store closure into an image instead of exporting the host store.
     useNixStoreImage = true;
     mountHostNixStore = false;
+    # Home Manager's activation sanity check needs a working Nix daemon.
+    # With no host store mounted, this defaults to false; enable a guest-only overlay.
+    writableStore = true;
     # qemu-vm normally adds writable exchange folders, even without user selections.
     sharedDirectories = lib.mkForce { };
   };
