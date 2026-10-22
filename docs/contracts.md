@@ -229,6 +229,19 @@ Home Manager imports determine which user applications become part of the built 
 
 The current public starter uses `desktop-basics.nix`. Additional applications remain available through other module selections.
 
+The v0.1 public starter does not record clipboard history or provide a default
+history-picker shortcut. Ordinary Wayland copy and paste, including the existing
+tmux and Neovim integration through `wl-clipboard`, work independently of cliphist.
+
+The translator and desktop adapters retain support for optional clipboard history.
+Consumer configurations with an explicit history shortcut remain unchanged until
+that shortcut is removed separately.
+
+Removing the package or shortcut does not delete existing history data. Cliphist
+normally stores it in `$XDG_CACHE_HOME/cliphist/db` (usually `~/.cache/cliphist/db`).
+No automatic cleanup is performed; deleting existing history requires a separate,
+deliberate operation.
+
 User preferences identify application choices, but the current implementation does not provide general automatic package negotiation or download-on-first-launch behavior.
 
 Any future provisioning mechanism must respect user consent and host software policies.
