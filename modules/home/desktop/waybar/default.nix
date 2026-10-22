@@ -3,6 +3,7 @@
 # PURPOSE: Installs Waybar configuration and the shared session control command.
 # ROLE: Uses the selected theme and replaces legacy session launcher strings.
 # CUSTOMIZATION: Change bar behavior in config.jsonc and appearance in style.css.
+# SECURITY: User configuration does not grant host or network privileges.
 
 { lib, pkgs, theme, ... }:
 
@@ -32,10 +33,6 @@ xdg.configFile."waybar/battery-total.sh" = {
   source = ./battery-total.sh;
   executable = true;
   };
-xdg.configFile."waybar/network-traffic.sh" = {
-  source = ./network-traffic.sh;
-  executable = true;
-};
 xdg.configFile."waybar/disk-free.sh" = {
   source = ./disk-free.sh;
   executable = true;

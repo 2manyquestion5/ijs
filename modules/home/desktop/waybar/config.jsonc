@@ -3,6 +3,7 @@
 // PURPOSE: Defines bar placement, widgets and custom scripts for the portable desktop.
 // ROLE: Installed through modules/home/desktop/waybar/default.nix.
 // CUSTOMIZATION: Preserve widget command contracts when editing; validate JSONC after changes.
+// SECURITY: Widget commands run with the desktop user's permissions.
 
 {
   "layer": "top",
@@ -141,16 +142,21 @@
   "group/connectivity": {
     "orientation": "vertical",
     "modules": [
-      "custom/traffic",
+      "network#traffic",
       "group/connectivity-bottom"
     ]
   },
 
-  "custom/traffic": {
-  "exec": "~/.config/waybar/network-traffic.sh",
-  "interval": 2,
-  "tooltip": false
-},
+  // Use Waybar's sampler instead of shell commands or persistent counter files.
+  // Omitting interface lets Waybar select the default-route interface.
+  "network#traffic": {
+    "interval": 2,
+    "format": "↑ {bandwidthUpBytes}  ↓ {bandwidthDownBytes}",
+    "format-linked": "↑ —  ↓ —",
+    "format-disconnected": "↑ —  ↓ —",
+    "format-disabled": "↑ —  ↓ —",
+    "tooltip": false
+  },
 
   "group/connectivity-bottom": {
     "orientation": "horizontal",
