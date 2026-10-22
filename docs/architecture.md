@@ -2,13 +2,24 @@
 
 ## Purpose
 
-ijs is a portable Nix infrastructure project built around NixOS, Home Manager, and flakes.
+ijs uses NixOS, Home Manager and flakes to compose system and user configurations.
+Its longer-term goal is a computing environment in which users, hosts, profiles,
+workspaces, applications, data and networks can be combined with explicit choices
+about sharing, isolation, persistence and access.
 
-It provides reusable components for configuring operating systems, desktop environments, servers, and portable user environments.
+The current implementation provides reusable modules, preference and theme
+helpers, desktop adapters and a Home Manager starter. It does not yet implement
+a general workspace, identity or distributed deployment system.
 
 The central design principle is **separation of responsibility**: infrastructure implements capabilities, hosts authorize them, and users select their own preferences.
 
-A complete desktop is one possible result, not a requirement. A headless server can use ijs without importing any graphical modules.
+A complete desktop is one possible composition, not a requirement. Consumers can
+select non-graphical modules independently; the lab-server role is currently a
+placeholder, not a ready-made server configuration.
+
+For a first build, use the [README](../README.md). The [roadmap](roadmap.md)
+records release preparation and validation evidence; this document explains the
+design and its boundaries.
 
 ## Repository architecture
 
@@ -41,7 +52,8 @@ The public repository also provides starter configurations so contributors can e
 
 ### Installation-specific repository
 
-A separate repository can compose actual hosts and portable users using the public ijs flake.
+A separate repository can compose actual hosts and reusable user configurations
+using the public ijs flake. The following layout is illustrative, not required:
 
 ```text
 ijs-personal/
@@ -63,7 +75,8 @@ This repository can be private or published voluntarily after appropriate review
 
 Actual secrets must remain outside plaintext Git and ordinary Nix configuration values, including in private repositories.
 
-The private flake declares ijs as an input and selects its exported modules and helper functions. It does not need to copy public implementations.
+The consuming flake declares ijs as an input and selects its exported modules
+and helper functions. It does not need to copy public implementations.
 
 No reusable module should depend on a specific personal repository name, hostname, username, or source directory.
 
@@ -73,7 +86,7 @@ No reusable module should depend on a specific personal repository name, hostnam
 |---|---|---|
 | Host | Hardware, boot, storage, network, account creation and administrative permissions | Does not dictate every user preference |
 | User | Applications, input preferences, appearance and personal requirements | Cannot grant privileged host capabilities |
-| Feature | Implements an individual capability | Does not automatically activate itself |
+| Feature | Implements an individual capability | Exporting it is inert; importing it can enable functionality |
 | Role | Selects related host-side capabilities | Does not own personal application choices |
 | Profile | Groups user-side preferences or functionality | Does not grant system permissions |
 | Theme | Defines reusable appearance values | Does not control host security |
@@ -81,7 +94,14 @@ No reusable module should depend on a specific personal repository name, hostnam
 | Workload | Describes an application or service and its resource needs | Does not own the underlying host |
 | Policy | Describes requirements and constraints | Must distinguish enforced rules from proposed checks |
 
-The host retains authority over privileged operations. A portable user can request capabilities but cannot authorize them simply by importing a Home Manager module.
+Hosts, users, features, roles, themes and adapters currently use ordinary Nix
+composition. Profiles describe user selections; there is no general profile
+selection framework. Workloads and policies are design vocabulary, not a runtime
+scheduler or an enforcement engine.
+
+The host retains authority over privileged operations. A user configuration can
+select applications and user services, but importing a Home Manager module does
+not authorize privileged host operations.
 
 ## Public module interfaces
 
@@ -99,9 +119,15 @@ inputs.ijs.modules.homeManager.waybar
 
 Exporting a module makes it available to consumers. It does not activate services, install programs, open firewall ports, or grant administrative privileges on its own.
 
-The consuming configuration explicitly selects the modules it needs.
+The consuming configuration selects modules in its NixOS or Home Manager
+`imports`. Their declarations can enable packages and services in the generated
+configuration. Evaluation resolves those declarations, building prepares the
+artifacts, and activation applies them; these are separate steps.
 
 These examples assume the public flake is named `ijs` in the consuming flake's inputs.
+See [technical contracts](contracts.md) for the helper signatures and composition
+examples. NixOS, Home Manager and flake-parts modules have different contexts and
+are not interchangeable.
 
 ## User preferences and desktop adapters
 
@@ -116,11 +142,14 @@ The current preference system separates:
 
 The preference loader resolves these files into a shared value. Desktop adapters then translate that value into native configuration.
 
-This permits the same preference definitions to be reused across different desktop environments without copying every shortcut or application setting.
+This allows supported preferences to be reused across desktop adapters without
+copying every shortcut or application setting. It is not a universal desktop API.
 
 The current implementation includes Hyprland and Niri translators.
 
-**Hyprland + Waybar is the public v0.1 starter.** Niri is available separately; Noctalia integration is planned.
+**Hyprland + Waybar is the public starter for v0.1 preparation.** Niri is
+experimental and available separately; Noctalia integration is planned. Adapter
+availability does not establish runtime coverage.
 
 ## Themes
 
@@ -142,11 +171,19 @@ For the currently implemented static configuration model:
 4. A Home Manager configuration selects user modules and supplies preferences.
 5. Shared translators generate program-native settings.
 6. Nix evaluates and builds the selected configuration.
-7. The administrator explicitly chooses whether to activate it.
+7. The operator explicitly activates the system or home environment with the
+   permissions appropriate to that configuration.
 
 Building a configuration does not automatically install or activate it.
 
 Runtime user provisioning, resource negotiation, and deployment orchestration are not implied by this process.
+
+The public output `homeConfigurations.example` builds only the user environment.
+It does not supply a NixOS host configuration. A consumer selecting the Hyprland
+desktop must also configure the host session and locking support. The existing
+NixOS integration uses UWSM for session lifecycle, NixOS-managed Hypridle and
+Hyprlock's PAM integration; building the Home Manager starter alone does not
+configure those host services.
 
 ## Portability and privacy
 
@@ -160,36 +197,31 @@ Machine-specific configuration may be maintained in private Git repositories. Ac
 
 Nix store contents and build outputs must not be assumed confidential.
 
-## Roles, profiles and workloads
+## Longer-term direction
 
-These terms have distinct meanings:
+One user may want the same shell and editor on a laptop, development VM and
+server, while keeping different data and permissions on each. Reusing preferences
+does not authenticate that user, distribute credentials, synchronize a home
+directory or move running processes. Each needs an explicit mechanism.
 
-**Role:** A host-side composition, such as a workstation or virtualization host.
+A workspace would describe related tasks, processes and tools. Data choices
+would describe what persists, is synchronized or is withheld; network choices
+would describe which services may communicate. These are questions to resolve
+through concrete examples, not new framework layers already present in ijs.
 
-**Profile:** A user-side selection of preferences, applications or behaviors.
+Environments may be deliberately open, isolated or partially connected. A
+workspace label or Nix option is not a security boundary. Isolation claims must
+identify the actual mechanism, trust assumptions and tests. Prefer existing
+Linux, NixOS, Home Manager, SSH and virtualization facilities before adding custom
+infrastructure.
 
-**Workload:** A requested service or application with associated resource requirements.
+The existing virtualization modules provide host capabilities, not reproducible
+guest provisioning. The negotiation example is a pure compatibility prototype
+over declared inputs, not runtime resource allocation, authentication or policy
+enforcement. See the [session negotiation design](session-negotiation.md) for its
+experimental scope.
 
-A headless server role should not import graphical functionality unless explicitly requested.
-
-Features and roles currently use ordinary Nix module composition. Richer role/profile selection interfaces are planned.
-
-## Roadmap and non-goals for v0.1
-
-The initial public release focuses on reusable modules, a buildable desktop starter, documented interfaces and a separate private configuration workflow.
-
-Future development may include:
-
-- Niri + Noctalia
-- A unified ijs desktop theme and boot identity
-- A configurable VM demonstration
-- Portable user-session negotiation
-- Resource and software-policy compatibility checks
-- Application selection and controlled on-demand provisioning
-- Remote host trust and multi-user deployment
-
-These are development directions, not guarantees of current functionality.
-
-The project should grow through reusable public improvements rather than accumulating incompatible machine-specific forks.
-
-**Guiding rule:** Public ijs owns capabilities and interfaces; installation-specific configurations own selections, identity and authorization.
+Further VM, selective-sharing and multi-host work should follow demonstrated
+needs. There is no promise of seamless cross-host login, live process migration,
+a secure remote GUI or a cloud control plane. The [roadmap](roadmap.md) separates
+near-term release gates from exploration.

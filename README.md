@@ -1,122 +1,73 @@
 # ijs
 
-**Portable Nix infrastructure.**
+ijs is a project for building composable computing environments with NixOS,
+Home Manager and Nix flakes. It provides reusable system and user modules,
+shared desktop preferences and a public example you can build independently.
 
-*Your system, your scoops.*
+The longer-term goal is to connect users, hosts, profiles, workspaces,
+applications, data and networks with explicit choices about sharing,
+persistence, access and isolation. Today's implementation is smaller: static
+Nix module composition and a Hyprland + Waybar Home Manager starter.
 
-ijs is an open-source project for building reproducible computing environments using NixOS and Home Manager.
+## What is available today?
 
-It provides reusable system modules, desktop configurations, host roles, user preferences and configuration interfaces. The goal is to make a computing environment portable without taking control away from the host administrator or the individual user.
+- Reusable NixOS and Home Manager modules, plus preference and theme helpers.
+- A minimal desktop example with Hyprland, Waybar, Firefox, Foot, Fuzzel,
+  Dolphin, Git, LazyVim, tmux and basic desktop utilities.
+- Additional application modules that consumers can select separately. The
+  starter does **not** import the larger `packages` collection containing
+  GitHub CLI, Yazi and archive tools. Tools available inside an application's
+  wrapper are not necessarily available in a normal terminal.
 
-## Project structure
+**v0.1 is in preparation, not released.** Earlier starter revisions have passed
+local builds; several recently repaired desktop components still await live
+validation. Niri is experimental. Automated deployment, runtime session
+negotiation and cross-host user environments are not implemented. See the
+[roadmap](docs/roadmap.md) for evidence and remaining milestones.
 
-```text
-ijs/
-├── configurations/    # Public starter configurations
-├── modules/           # Reusable NixOS and Home Manager modules
-├── features/          # Optional capabilities
-├── roles/             # Workstation and server responsibilities
-├── profiles/          # User profile documentation
-├── themes/            # Appearance definitions
-├── lib/               # Shared functions and translators
-├── examples/          # Architecture examples
-├── docs/              # Documentation
-├── flake.nix
-└── AGENTS.md
-```
+## Build the public example
 
-The reusable implementation is collectively called **infrastructure**. Its directories remain at the repository root for now.
+You need Git and a working Nix installation on **x86_64 Linux**, internet access
+and space for the build dependencies. The command enables Nix's flake features
+for this invocation; no permanent Nix settings change is needed.
 
-The `configurations/` directory contains public starting points. An installation's real hosts, accounts and preferences can be maintained in a separate repository.
-
-## Current starter environment
-
-The first public user example provides:
-
-- Hyprland and Waybar
-- Firefox, Foot, Fuzzel and Dolphin
-- LazyVim, Git and tmux
-- Shared keyboard shortcuts and application actions
-- A selectable theme
-- Basic desktop utilities
-
-These are defaults, not compulsory dependencies. A headless server can select only the system functionality it requires.
-
-Niri is also available as an optional desktop module.
-
-## Building the example
-
-On a compatible Nix-enabled x86_64 Linux system with flakes available:
+Run this from a directory where you want a new `ijs` checkout:
 
 ```bash
-nix build --no-link \
+git clone https://github.com/2manyquestion5/ijs.git
+cd ijs
+nix --extra-experimental-features 'nix-command flakes' build \
+  --no-link --no-write-lock-file \
   .#homeConfigurations.example.activationPackage
 ```
 
-This builds the example Home Manager environment without activating it.
+This builds the Home Manager example using the checked-in dependency lockfile.
+It does not activate it, change the running desktop, or create a `result`
+symlink. The first build can download and build many dependencies.
 
-The example uses the illustrative account `example`. It does not create a Linux user, configure disks, or provide a complete operating-system installation.
+The example targets the illustrative account `example` at `/home/example`.
+It is **not a complete NixOS installer or a ready-to-activate workstation**:
+it does not create accounts, configure disks or provide the host's graphical
+session and PAM integration. **Do not activate it unchanged on your account.**
 
-**Do not activate the example unchanged on your personal account.**
+## Use modules in your own configuration
 
-## Personal configurations
+Public ijs owns reusable functionality and examples. A separate consuming
+repository owns actual hosts, accounts, hardware settings and user selections;
+it can be private. It declares ijs as a flake input and imports the modules it
+needs. Exporting a module only makes it available. Importing it contributes
+configuration; evaluation and building prepare the result, and activation
+applies it to a system or home environment.
 
-Actual hardware settings and individual user choices should be kept separately from the public infrastructure.
+Start with the [architecture](docs/architecture.md) for ownership and composition,
+then the [technical contracts](docs/contracts.md) for exported interfaces and
+preference examples. Keep credentials outside plaintext Git and ordinary Nix
+values: private repositories and Nix store paths are not secret vaults.
 
-A personal configuration can declare a flake dependency on ijs and use its exported modules and helper functions.
+## Further reading
 
-For example, a personal repository might contain:
-
-```text
-ijs-personal/
-├── flake.nix
-├── hosts/
-│   └── my-host/
-└── users/
-    └── my-user/
-```
-
-The repository name and filesystem location are not part of the public interface.
-
-## Security and privacy
-
-- Host administrators control account creation, permissions, networking and privileged services.
-- User preferences do not automatically grant system privileges.
-- Registering a module does not activate it.
-- Keep passwords, access tokens, private keys and recovery material outside plaintext Git and ordinary Nix configuration values.
-- Keep installation-specific identifiers and sensitive local information out of the public repository.
-- Treat private repositories as version-controlled configuration, not as secret vaults.
-- Evaluate and build changes before activating them on real hardware.
-
-Nix store paths and build artifacts should not be assumed to be confidential.
-
-## Current implementation and roadmap
-
-**Implemented and build-tested:**
-
-- Public NixOS and Home Manager module exports
-- Preference loading and theme resolution
-- Hyprland and Niri configuration translators
-- A buildable Hyprland + Waybar Home Manager example
-- Composition of a separately maintained host and user configuration
-
-**Planned or experimental:**
-
-- A fully branded ijs desktop and boot experience
-- Niri + Noctalia integration
-- A reproducible VM demonstration
-- Host/user session negotiation and isolation policies
-- Application selection and provisioning improvements
-- Broader compatibility and automated testing
-
-Successful builds do not establish that every desktop or hardware configuration has been tested at runtime.
-
-## Documentation and contributing
-
-Start with [the glossary](docs/glossary.md), [architecture](docs/architecture.md), and [configuration contracts](docs/contracts.md).
-
-The [contributor guidelines](AGENTS.md) describe our documentation, modularity, security and testing standards.
-
-Reusable improvements belong in the public project. Individual deployment choices belong in the consuming configuration.
-
-Our goal is to let ijs grow through contributions without sacrificing reproducibility, portability or user control.
+- [Roadmap and v0.1 validation status](docs/roadmap.md)
+- [Architecture and longer-term direction](docs/architecture.md)
+- [Configuration contracts](docs/contracts.md)
+- [Glossary](docs/glossary.md)
+- [Contributor and coding-agent rules](AGENTS.md)
