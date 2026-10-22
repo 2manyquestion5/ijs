@@ -70,4 +70,5 @@ values: private repositories and Nix store paths are not secret vaults.
 - [Architecture and longer-term direction](docs/architecture.md)
 - [Configuration contracts](docs/contracts.md)
 - [Glossary](docs/glossary.md)
+- [Contributing](CONTRIBUTING.md)
 - [Contributor and coding-agent rules](AGENTS.md)

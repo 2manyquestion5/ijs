@@ -1,7 +1,9 @@
 # Repository documentation and commenting standard
 
 **Purpose:** Make every component understandable without requiring access to its original author.
-**Status:** Adopted for this documentation pass; runtime semantics were intentionally preserved.
+This is ongoing contributor guidance, not a record of build or runtime results.
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for workflow and
+[the roadmap](roadmap.md) for validation evidence.
 
 ## Every source file
 
@@ -23,4 +25,7 @@ Do not add comments that break syntax: keep shell shebangs first; use `//` for K
 
 ## Checks needed
 
-Run syntax and Nix evaluation, then builds, VM tests and eventually controlled physical activation. No successful runtime/build test is claimed by this documentation-only pass.
+Choose checks appropriate to the change: documentation links and commands,
+source syntax, Nix evaluation, builds and focused application or VM tests.
+Activation on real hardware is a separate deployment decision, not a routine
+requirement for every contribution. Report what ran and what remains untested.
