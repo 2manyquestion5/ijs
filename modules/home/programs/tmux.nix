@@ -3,6 +3,7 @@
 # PURPOSE: Preserves the existing copy-mode, vi-navigation and plugin workflow.
 # ROLE: User-level Home Manager module with a shared resolved theme.
 # CUSTOMIZATION: Review keybindings before changing them; they are part of the user environment.
+# SECURITY: Copy-mode actions send selected text to the session clipboard.
 
 { pkgs, theme, ... }:
 
@@ -33,9 +34,9 @@
         # Catappuccin theme
         set -g @catppuccin_flavor "${theme.catppuccinFlavor}"
 
-        #Copy from tmux directly to wayland clipboard
-      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy"
-      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "wl-co>
+      # Copy the selection to the Wayland clipboard and leave copy mode.
+      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
+      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
     '';
 
     };
