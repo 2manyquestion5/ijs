@@ -1,5 +1,5 @@
 
-# Glossary — Nix Infrastructure
+# ijs — Glossary
 
 <!--
 PURPOSE:
@@ -37,25 +37,29 @@ These are established technologies, not concepts invented by this project.
 
 ## 2. Project architecture
 
-These are concepts defined by our infrastructure design.
+These terms describe the current composition model and longer-term design.
+Their presence here does not mean a corresponding runtime API exists. See
+[architecture](architecture.md) for ownership and [the roadmap](roadmap.md) for
+implementation and validation status.
 
 | Term | Meaning |
 |---|---|
 | **Host** | Physical machine or VM providing computing resources and enforcing administrative policy. |
-| **User** | Portable identity with personal preferences, requirements, and authorized access. |
+| **User** | Account or person whose configuration selects preferences and applications. Reusing configuration does not authenticate that user on another host. |
 | **Capability** | Function a host or environment can provide, such as virtualization or graphical sessions. |
 | **Feature** | Reusable implementation of a capability. Defining a feature does not automatically enable it. |
-| **Role** | Named combination of host capabilities, such as workstation or server. |
-| **Profile** | Named combination of user features and preferences, such as development or privacy. |
+| **Role** | Host-side composition of NixOS capabilities; the workstation role is implemented, while lab-server is a placeholder. |
+| **Profile** | User-side grouping of applications and preferences; currently a concept, not a complete selection system. |
 | **Preference** | Desired behavior that may permit acceptable alternatives. |
 | **Requirement** | Mandatory condition that must be satisfied before an environment is accepted. |
 | **Policy** | Rules governing security, software, permissions, and resource use. |
 | **Workload** | Application, service, or job requiring computing resources. |
-| **Compatibility check** | Evaluation of whether user requirements, host policies, and workload needs can be satisfied together. |
+| **Compatibility check** | Comparison of declared requirements and capabilities. The current negotiation prototype checks mode overlap, memory and one software-freedom flag; it does not enforce runtime policy. |
 | **Session** | Authorized environment in which a user interacts with a host or its resources. |
 | **Session provisioning** | Future runtime process for allocating resources and launching a negotiated session. |
 | **Native session** | Environment using the host's existing operating system infrastructure. |
-| **Isolated session** | Environment separated from the host, potentially using a virtual machine. |
+| **Isolated session** | Environment with a stated isolation mechanism and trust assumptions, potentially using a VM. Not implemented as a general ijs session service. |
+| **Workspace** | Grouping of related activity. A Hyprland workspace organizes windows; the broader ijs workspace concept is exploratory and does not itself enforce isolation. |
 | **Portable environment** | User configuration that can be reproduced on different compatible hosts. |
 | **Persistence** | Preservation of personal files or application state across sessions. |
 
@@ -83,11 +87,12 @@ These are concepts defined by our infrastructure design.
 | **hosts/** | Machine-specific compositions and hardware configurations. |
 | **users/** | Personal account definitions, preferences, and requirements. |
 | **roles/** | Host-oriented capability selections. |
-| **profiles/** | User-oriented feature selections. |
+| **profiles/** | Documentation of planned user-side selections; no general profile-selection implementation yet. |
 | **themes/** | Reusable appearance definitions and palettes. |
 | **lib/** | Shared functions, translators, and helpers. |
 | **docs/** | Architecture, installation, security, and contributor documentation. |
 | **AGENTS.md** | Instructions and conventions for coding assistants and contributors. |
+| **CONTRIBUTING.md** | Practical development, validation and publication workflow. |
 
 ## 5. Important distinctions
 
@@ -105,13 +110,19 @@ A feature defines a reusable implementation.
 
 A role selects and combines features for a particular purpose.
 
-Importing a feature definition must not automatically activate privileged services.
+Exporting a module makes it available. Importing/selecting it contributes
+configuration and can enable services in the resulting configuration. Activation
+applies that configuration to a running environment; building does not activate
+it. Host-level declarations remain responsible for privileged capabilities.
 
 ### Preference vs. requirement
 
 A preference allows acceptable alternatives.
 
-A requirement is mandatory. If it cannot be satisfied, compatibility checking must reject the requested environment.
+A requirement is mandatory. A future compatibility interface must reject an
+unsatisfied requirement rather than silently weakening it. The current
+prototype checks only a small set of declared conditions, not every possible
+requirement or host claim.
 
 ### Configuration vs. personal data
 
@@ -119,12 +130,16 @@ Configuration describes how an environment should be constructed.
 
 Personal data includes files, credentials, browser state, and other mutable information.
 
-Our first implementation keeps personal data local. Portable, encrypted data will be addressed as the VM and cloud infrastructure develop.
+The current configuration model does not transfer or synchronize personal data.
+Selective data sharing and persistence across hosts are future work, not
+properties supplied automatically by a reusable user configuration.
 
 ### Build-time vs. runtime
 
 Nix evaluates and builds declarative configurations.
 
-Runtime components perform actions such as authentication, resource negotiation, session provisioning, and VM creation.
+Existing host and application services handle runtime behavior such as login
+and locking. General resource negotiation and session provisioning are proposed
+ijs capabilities, not services implemented by the current prototype.
 
 A successful NixOS build does not prove that future session provisioning or security enforcement is implemented.

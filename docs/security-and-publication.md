@@ -1,73 +1,93 @@
-# Security and publication checklist
+# Security and publication
 
-**Do not upload the supplied source snapshot unchanged.** Hardware, storage and LUKS UUIDs can identify the machine; `extraHosts` contains private lab network names and addresses. No obvious passwords/private keys were found in the archive scan, but that is not proof of safety. The archive is a snapshot and may be stale.
+This is reusable review guidance, not a security audit of the current system.
+See [the roadmap](roadmap.md) for recorded validation evidence and
+[CONTRIBUTING.md](../CONTRIBUTING.md) for the development workflow.
 
-## Runtime baseline
+## Public configuration and sensitive information
 
-- Keep NixOS firewall explicitly enabled. Existing `nft` evidence showed filtering working, with libvirt's dedicated bridge rules. Check effective *runtime* behavior again after the migration.
-- Restore reverse-path filtering only with a local recovery route; assess VM network effects. No current VPN use has been reported.
-- Disable unnecessary incoming SSH, Avahi/mDNS, printing and Bluetooth when a selected role does not need them. GNOME currently requests Avahi; document any `mkForce false` override rather than burying it.
-- Declare privileged membership (`wheel`, `libvirtd`, `kvm`) **only** via host authorization. KVM access and virtualization management can be security sensitive; do not grant them to visiting users by profile.
-- Use restricted default networking for untrusted VM workloads; no clipboard, device passthrough, shared folders, or host credentials unless justified. VM isolation reduces risk but is not a malware-proof guarantee.
-- Do not edit the active LUKS mapping, hardware UUIDs, `system.stateVersion` (`26.05`) or `home.stateVersion` (`26.05`) for cosmetic portability. Abstract machine-specific identifiers into a private machine overlay/example instead; preserve actual bootable config locally.
-- A group access policy needs actual auth implementation before dynamic login is exposed. Never allow arbitrary user configs to change host NixOS modules.
+Public ijs contains reusable modules, sanitized examples, interfaces and
+technical documentation. Actual host definitions, storage identifiers, account
+choices and confidential network details belong in the consuming configuration,
+unless deliberately reviewed for publication.
 
-## Public repository data policy
+Neither public nor private Git repositories are secret vaults. Keep passwords,
+API tokens, private keys, recovery material and Wi-Fi secrets out of plaintext
+Git and ordinary Nix values. Nix source, store paths and generated artifacts
+must not be assumed confidential. Secret-management tools need explicit choices
+about encryption, recipients and where decrypted values are made available.
 
-**Allowed after review:** reusable Nix modules, examples, source templates, documented policy, pure functions, pinned flake lock, sanitized host example.
+Handle sensitive source material with appropriately restricted file permissions
+and secure backups. Protect backup copies with access controls and encryption
+appropriate to their contents; keep secrets and backup copies out of Git.
 
-**Private by default:** private keys, SSH agent data, tokens, API credentials, passwords, Wi-Fi secrets, user files, browser profiles, service state, VM disks, confidential network topology, device identifiers the operator wants private.
+User files, browser profiles, SSH agent data, service state and VM disks are
+not reusable source configuration. Review example data and screenshots too.
+Choose a public Git identity deliberately: author and committer fields are
+published along with commit messages, PR text and comments.
 
-Proposed ignore additions (`.gitignore` alone is insufficient):
+## Before publishing a change
 
-```gitignore
-# Nix outputs and caches
-/result
-/result-*
-.direnv/
-.venv/
-# Editor artifacts
-*.swp
-*.swo
-*~
-*.save
-*.bak
-# Environment and credentials
-.env
-.env.*
-*.key
-*.pem
-*.age
-*.p12
-*.pfx
-/secrets/
-/credentials/
-# Local operator overrides and VM disks
-/local/
-*.local.nix
-*.qcow2
-*.img
-*.vdi
-*.vmdk
+- Inspect tracked, untracked and ignored files, the staged paths and diff, and
+  every commit being pushed. When publishing existing history, review it too.
+- Check for credentials, private identities, local paths, hardware identifiers
+  and confidential host or network information. A secret scanner such as
+  `gitleaks` can help; inspect its findings and state what was actually scanned.
+- Check both author and committer metadata and the PR text. Repository-local
+  identity settings do not change existing commits or GitHub-created commits.
+- Check generated files and build outputs before sharing them. Sanitizing the
+  source does not prove that a log or artifact contains no sensitive data.
+
+From the repository root, list tracked files and inspect working-tree status,
+including untracked and ignored files:
+
+```bash
+git ls-files
+git status --short --ignored --untracked-files=all
 ```
 
-**Caution:** Ignoring `*.img` could hide useful nonsecret test images; intentionally add approved assets if needed. Neglecting file modes, `.gitignore` exclusions, or tracked history can still cause leakage.
+Review this output locally; do not publish sensitive filenames or contents.
 
-## Review before first public push
+`.gitignore` helps prevent accidental additions, but does not encrypt files,
+remove tracked files or clean Git history. A header saying PRIVATE is not access
+control. Removing a file from the latest commit does not remove earlier copies.
+If a credential was exposed, revoke or rotate it first; coordinate any history
+cleanup separately. Avoid quoting the exposed value in reports or PRs.
 
-1. Freeze live changes and obtain an up-to-date source snapshot with authorization to review it.
-2. `git status --short`, `git ls-files`, inspect all untracked and ignored files locally (`git status --ignored --short`). Do not paste secret-bearing output.
-3. Remove editor backup, obsolete adapter and stale host-specific lab aliases; verify no imports refer to removed paths.
-4. Scan all new files and shell scripts; separately inspect LUKS, hardware configuration, user account permissions, system imports and networking. Use a secret scanner such as `gitleaks` on proposed publication files and audit findings manually.
-5. Keep the *working private* hardware config under local management; publish a clearly marked placeholder/example or consciously decide what nonsecret identifiers may be public.
-6. Create a separate publication directory **without copying `.git`**. Never run `git init` inside the original working repository just to erase history.
-7. Review `git diff --cached`, `git ls-files`, `git status --ignored` and secret-scan results in the **new** repository before its first commit.
-8. Create a private GitHub repo initially. Upload only reviewed history. Publicize only after one more check and approval.
-9. Back up files securely; do not expect an ignored secret to be encrypted or protected by Git.
+## Runtime boundaries and deployment
 
-## Known uncertainties
+Hosts authorize accounts, privileged groups, services and network access. User
+preferences and Home Manager selections do not grant those permissions. An
+imported NixOS module can enable privileged services in the generated system;
+review its declarations before building and activating it.
 
-- Current archive is not necessarily the active system.
-- Scan does not establish the absence of embedded secrets, proprietary dependencies or insecure runtime behavior.
-- Host claims about encryption/software freedom are not remote attestation.
-- No automated verification of VM guest firewall, firmware, disk unlock, or graphical login has been performed by this document package.
+Explicitly enable host firewall protection and minimize unnecessary exposed
+services. Verify effective firewall and service behavior on the deployed host;
+do not infer that a port is closed, a route is restricted or a VM is isolated
+just because a configuration option exists. Use tests appropriate to the claimed
+boundary. Preserve independent recovery access, such as a local console, before
+potentially disruptive networking or filtering changes.
+Hyprland workspaces organize windows; they do not isolate processes, storage,
+credentials or networks.
+
+VMs and containers provide different boundaries. Untrusted VM workloads should
+have restricted networking and no unnecessary clipboard, folder, device or
+credential sharing by default. Review and justify any exceptions; neither a VM
+label nor a workspace label establishes a security guarantee. The current
+negotiation prototype checks declared inputs, not remote host integrity.
+
+Build before activation. Keep the working boot and storage configuration intact
+while preparing a candidate, and document recovery and rollback in the consuming
+repository. Do not change disk identifiers or state-version settings merely to
+make an example look generic. Use placeholders in public examples instead.
+
+## Historical migration context
+
+Earlier versions of this document mixed publication guidance with observations
+from an initial source archive and migration review. Those observations were
+specific to that snapshot, not evidence about the current checkout or any
+running machine. They are not carried forward as current security findings.
+
+Host-specific follow-up and deployment decisions belong in the consuming
+repository. New verification results should record their revision, method and
+limits; update the public roadmap only with evidence suitable for publication.

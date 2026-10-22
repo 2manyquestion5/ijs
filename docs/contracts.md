@@ -6,11 +6,16 @@ This document describes the technical interfaces between reusable ijs infrastruc
 
 Interfaces are labeled as **implemented** or **proposed** to avoid confusing working functionality with future design plans.
 
+These labels describe the interface, not validation of every consuming system.
+See the [roadmap](roadmap.md) for revision-specific build and runtime evidence,
+[architecture](architecture.md) for ownership, and
+[CONTRIBUTING.md](../CONTRIBUTING.md) for the review workflow.
+
 The preferred implementation strategy is to use standard NixOS, Home Manager, flake-parts and Nix module mechanisms wherever possible.
 
 ## 1. Flake dependency contract
 
-**Status: Implemented and build-tested**
+**Status: Implemented**
 
 An installation-specific flake declares ijs as an input.
 
@@ -30,7 +35,7 @@ A flake dependency is not a mechanism for storing or protecting secrets.
 
 ## 2. Module registration contract
 
-**Status: Implemented and build-tested**
+**Status: Implemented**
 
 ijs uses flake-parts and its module registry:
 
@@ -54,15 +59,17 @@ inputs.ijs.modules.nixos.workstation
 inputs.ijs.modules.homeManager.hyprland
 ```
 
-Registering a module does not activate it.
-
-An actual configuration must explicitly select the module in its NixOS or Home Manager `imports`.
+Exporting or registering a module makes it available without enabling it.
+Selecting it in a NixOS or Home Manager `imports` list contributes declarations
+and may enable packages or services in the generated configuration. Evaluation
+resolves those declarations; building prepares artifacts. Activation applies
+the built configuration to the system or home environment.
 
 NixOS modules, Home Manager modules and flake-parts modules have different evaluation contexts. They must not be treated as interchangeable.
 
 ## 3. Preference loading contract
 
-**Status: Implemented and build-tested**
+**Status: Implemented**
 
 The public helper is exported as:
 
@@ -106,7 +113,7 @@ The caller chooses the preference directory.
 
 ## 4. Theme resolution contract
 
-**Status: Implemented and build-tested**
+**Status: Implemented**
 
 Theme resolution uses:
 
@@ -130,7 +137,7 @@ The intended design is for themes to remain independent of user identity and des
 
 ## 5. Home Manager composition contract
 
-**Status: Implemented and build-tested**
+**Status: Implemented**
 
 The user composition loads preferences and resolves the theme before importing the selected Home Manager modules.
 
@@ -148,7 +155,9 @@ This avoids importing a particular user's preference directory inside reusable d
 
 A typed Home Manager option may replace the current argument-based interface in a future version.
 
-The public starter uses Hyprland and Waybar, while the private composition can independently select its own modules.
+The public starter uses Hyprland and Waybar; consuming configurations select
+their own modules. Roles currently compose host-side modules. Profiles remain
+user-side concepts, not a general implemented profile-selection interface.
 
 ## 6. Desktop translation contract
 
@@ -186,7 +195,8 @@ The host is responsible for:
 
 A portable Home Manager configuration can request applications and user-level functionality, but it does not automatically gain privileges.
 
-Module registration and feature availability are distinct from feature activation.
+Module exports, module selection and activation are separate steps, as described
+in the module registration contract above.
 
 The future capability-negotiation system must respect both enforceable host restrictions and mandatory user requirements.
 
@@ -212,6 +222,9 @@ Illustrative format:
 ```
 
 This is a proposed data contract, not a finished policy engine.
+
+The existing [negotiation example](session-negotiation.md) returns a list of
+reason strings; it does not implement the structured reason objects shown here.
 
 Mandatory requirements must be treated as constraints rather than ordinary preferences.
 
@@ -264,6 +277,9 @@ The longer-term session model may distinguish:
 
 Such environments provide different isolation guarantees.
 
+Hyprland workspaces are window-management groupings, not isolated sessions or
+security boundaries. They do not separate processes, storage or network access.
+
 The current repository does not implement automatic VM allocation, remote authentication, live migration or runtime session negotiation.
 
 ## 11. Security and publication contract
@@ -280,13 +296,10 @@ Private repositories are not secret vaults.
 
 Secret values must not be embedded in ordinary Nix configuration expressions where they could enter Nix store paths or generated files.
 
-Before publishing changes:
-
-1. Review staged files and repository history.
-2. Scan for credentials and sensitive identifiers.
-3. Evaluate and build affected configurations.
-4. Document significant interfaces or security changes.
-5. Avoid claiming runtime validation when only builds have been tested.
+Use the [security and publication guide](security-and-publication.md) to review
+staged contents, published history, metadata and sensitive information. Follow
+[CONTRIBUTING.md](../CONTRIBUTING.md) for checks appropriate to the change, and
+report runtime limits separately from evaluation and builds.
 
 ## 12. Compatibility and future development
 
