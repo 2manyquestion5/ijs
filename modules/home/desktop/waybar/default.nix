@@ -29,10 +29,6 @@ in
 xdg.configFile."waybar/config.jsonc".text = config;
 xdg.configFile."waybar/style.css".source = ./style.css;
 
-xdg.configFile."waybar/battery-total.sh" = {
-  source = ./battery-total.sh;
-  executable = true;
-  };
 xdg.configFile."waybar/disk-free.sh" = {
   source = ./disk-free.sh;
   executable = true;
