@@ -27,6 +27,7 @@ pkgs.testers.runNixOSTest {
     machine.wait_for_unit("register-nix-paths.service")
     machine.succeed("test -L /home/example/.config/tmux/tmux.conf")
     machine.succeed("test -L /home/example/.config/nvim/init.lua")
+    machine.succeed("test -L /home/example/.local/share/nvim/lazy/lazy.nvim")
 
     def as_example(command):
         return machine.succeed("runuser -l example -c " + shlex.quote(command))
@@ -35,7 +36,13 @@ pkgs.testers.runNixOSTest {
     as_example("nix-store --query --requisites /run/current-system > /dev/null")
     for command in ["git --version", "tmux -V", "rg --version", "fd --version"]:
         as_example(command)
-    as_example("nvim --headless '+lua assert(vim.fn.exists(\":Lazy\") == 2)' +qa")
+    # Bootstrap failures can wait for a keypress, even in headless mode.
+    # Bound startup and make initialization errors fail the process explicitly.
+    as_example(
+        "timeout --kill-after=5s 60s nvim --headless "
+        "'+lua if vim.fn.exists(\":Lazy\") ~= 2 or vim.v.errmsg ~= \"\" "
+        "then vim.cmd(\"cquit 1\") end' +qa"
+    )
     assert "copy-selection-and-cancel" in as_example(
         "cat ~/.config/tmux/tmux.conf"
     )

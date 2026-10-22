@@ -14,6 +14,10 @@
 
   programs.git.enable = true;
 
+  # The pinned LazyVim starter bootstraps here, even though Nix packages lazy.nvim.
+  # Supply that location declaratively so a fresh home does not clone it at runtime.
+  xdg.dataFile."nvim/lazy/lazy.nvim".source = pkgs.vimPlugins.lazy-nvim;
+
   # These must also be available in the terminal, outside Neovim's wrapper.
   home.packages = [ pkgs.ripgrep pkgs.fd ];
 

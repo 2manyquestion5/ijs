@@ -88,11 +88,13 @@ checks integrated Home Manager activation and runs command/editor smoke tests.
 A successful evaluation or build alone does not demonstrate that the VM booted.
 
 Cloud validation covers evaluation of both compositions and isolated tmux
-behavior. A local VM test booted and reached console login, but Home Manager
-activation failed because the guest store was read-only. The configuration now
-enables the writable overlay, and the test prints service status and journals
-on activation failure. A successful local rerun of activation and the remaining
-smoke tests is still required; cloud builds remain limited by the relocated store.
+behavior. Local runs confirmed VM boot, Home Manager activation and the CLI
+version checks after correcting the read-only guest store. Neovim then attempted
+to clone its plugin manager and waited for input when that failed. The shared
+example now supplies the packaged plugin at the starter's expected data location,
+and the headless smoke test has a timeout and explicit error exit. A complete
+successful VM test is still pending; cloud builds remain limited by the relocated
+store. Service status and journals are printed if Home Manager activation fails.
 
 ## How composition works
 
@@ -104,6 +106,9 @@ the integrated version gets them from the [NixOS guest account](vm.nix).
 The integrated example uses the host package set and NixOS user-package support.
 Both select the same tools and generate the same editor and tmux configuration;
 their activation scripts and support packages can differ between deployment modes.
+The shared module also links Nix's packaged `lazy.nvim` at the bootstrap location
+expected by the pinned LazyVim dependency. This compatibility setting is confined
+to the portability example; existing desktop defaults are unchanged.
 
 The shared module selects a theme and disables the new
 `ijs.tmux.waylandClipboard.enable` option for these terminal examples. Its
