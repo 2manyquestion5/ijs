@@ -17,6 +17,10 @@ Git and ordinary Nix values. Nix source, store paths and generated artifacts
 must not be assumed confidential. Secret-management tools need explicit choices
 about encryption, recipients and where decrypted values are made available.
 
+Handle sensitive source material with appropriately restricted file permissions
+and secure backups. Protect backup copies with access controls and encryption
+appropriate to their contents; keep secrets and backup copies out of Git.
+
 User files, browser profiles, SSH agent data, service state and VM disks are
 not reusable source configuration. Review example data and screenshots too.
 Choose a public Git identity deliberately: author and committer fields are
@@ -24,8 +28,8 @@ published along with commit messages, PR text and comments.
 
 ## Before publishing a change
 
-- Inspect the staged paths and diff, new or untracked files, and every commit
-  being pushed. When publishing existing history, review that history too.
+- Inspect tracked, untracked and ignored files, the staged paths and diff, and
+  every commit being pushed. When publishing existing history, review it too.
 - Check for credentials, private identities, local paths, hardware identifiers
   and confidential host or network information. A secret scanner such as
   `gitleaks` can help; inspect its findings and state what was actually scanned.
@@ -33,6 +37,16 @@ published along with commit messages, PR text and comments.
   identity settings do not change existing commits or GitHub-created commits.
 - Check generated files and build outputs before sharing them. Sanitizing the
   source does not prove that a log or artifact contains no sensitive data.
+
+From the repository root, list tracked files and inspect working-tree status,
+including untracked and ignored files:
+
+```bash
+git ls-files
+git status --short --ignored --untracked-files=all
+```
+
+Review this output locally; do not publish sensitive filenames or contents.
 
 `.gitignore` helps prevent accidental additions, but does not encrypt files,
 remove tracked files or clean Git history. A header saying PRIVATE is not access
@@ -47,14 +61,18 @@ preferences and Home Manager selections do not grant those permissions. An
 imported NixOS module can enable privileged services in the generated system;
 review its declarations before building and activating it.
 
-Check effective firewall and service behavior on the deployed host. Do not infer
-that a port is closed, a route is restricted or a VM is isolated just because a
-configuration option exists. Use tests appropriate to the claimed boundary.
+Explicitly enable host firewall protection and minimize unnecessary exposed
+services. Verify effective firewall and service behavior on the deployed host;
+do not infer that a port is closed, a route is restricted or a VM is isolated
+just because a configuration option exists. Use tests appropriate to the claimed
+boundary. Preserve independent recovery access, such as a local console, before
+potentially disruptive networking or filtering changes.
 Hyprland workspaces organize windows; they do not isolate processes, storage,
 credentials or networks.
 
-VMs and containers provide different boundaries. Review network access, shared
-folders, clipboard sharing, devices and credentials explicitly; neither a VM
+VMs and containers provide different boundaries. Untrusted VM workloads should
+have restricted networking and no unnecessary clipboard, folder, device or
+credential sharing by default. Review and justify any exceptions; neither a VM
 label nor a workspace label establishes a security guarantee. The current
 negotiation prototype checks declared inputs, not remote host integrity.
 
