@@ -43,7 +43,7 @@
   "group/capacity": {
     "orientation": "vertical",
     "modules": [
-      "custom/battery-total"
+      "battery#total"
     ]
   },
 
@@ -53,9 +53,11 @@
     "tooltip": false
   },
 
-  "custom/battery-total": {
-    "exec": "~/.config/waybar/battery-total.sh",
+  // Omitting bat lets Waybar discover and combine available system batteries.
+  "battery#total": {
     "interval": 10,
+    "weighted-average": true,
+    "format": "{capacity}%",
     "tooltip": false
   },
 
