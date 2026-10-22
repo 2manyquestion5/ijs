@@ -25,6 +25,15 @@
 #   On-demand application provisioning is not implemented yet.
 { pkgs, ... }:
 {
+  programs.gh = {
+    enable = true;
+    # Install the CLI without changing Git's existing credential helpers.
+    gitCredentialHelper.enable = false;
+  };
+
+  # Keep Yazi's default behavior; Home Manager owns its installation.
+  programs.yazi.enable = true;
+
   home.packages = with pkgs; [
     # WEB BROWSERS
     # Firefox is the currently selected browser.
@@ -45,6 +54,11 @@
     jq                      # JSON processing
     bat                     # File viewer with syntax highlighting
     statix                  # Nix static analysis
+
+    # ARCHIVE TOOLS
+    zip                     # Create ZIP archives
+    unzip                   # Extract ZIP archives
+    _7zz                    # Modern 7zip CLI (7zz)
 
     # WAYLAND DESKTOP UTILITIES
     wl-clipboard            # Wayland clipboard interface
