@@ -18,6 +18,7 @@
         ./modules/flake/registry.nix
         ./modules/flake/public-api.nix
         ./modules/flake/starter.nix
+        ./modules/flake/portability.nix
       ];
       systems = [ "x86_64-linux" ];
     };
