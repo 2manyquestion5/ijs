@@ -64,6 +64,7 @@ margin-left: 52px
     color: @critical;
 }
 
-#network {
+/* Keep the traffic label's inherited color; accent only the connectivity label. */
+#network:not(.traffic) {
     color: @healthy;
 }
