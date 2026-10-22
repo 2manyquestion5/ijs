@@ -36,7 +36,6 @@
     waybar
     swaynotificationcenter
     playerctl               # Media playback controls
-    cliphist                # Clipboard history
     wireplumber             # Audio controls through wpctl
 
     # Session and desktop tools

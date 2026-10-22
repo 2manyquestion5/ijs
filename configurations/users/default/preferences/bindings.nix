@@ -131,7 +131,6 @@
 
   desktop = {
     notifications = "SUPER+N";
-    clipboard     = "SUPER+V";
     displays      = "SUPER+P";
   };
 
