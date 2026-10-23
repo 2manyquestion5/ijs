@@ -22,7 +22,7 @@ Nix module composition and a Hyprland + Waybar Home Manager starter.
 **v0.1 is in preparation, not released.** Earlier starter revisions have passed
 local builds; several recently repaired desktop components still await live
 validation. Niri is experimental. Automated deployment, runtime session
-negotiation and cross-host user environments are not implemented. See the
+negotiation and cross-host session orchestration are not implemented. See the
 [roadmap](docs/roadmap.md) for evidence and remaining milestones.
 
 ## Build the public example
@@ -66,6 +66,7 @@ values: private repositories and Nix store paths are not secret vaults.
 
 ## Further reading
 
+- [Experimental user environment: standalone Home Manager and a development VM](examples/portability/README.md)
 - [Selecting, disabling and validating LazyVim](docs/applications/lazyvim.md)
 - [Roadmap and v0.1 validation status](docs/roadmap.md)
 - [Architecture and longer-term direction](docs/architecture.md)

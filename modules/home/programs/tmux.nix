@@ -3,13 +3,18 @@
 # PURPOSE: Preserves the existing copy-mode, vi-navigation and plugin workflow.
 # ROLE: User-level Home Manager module with a shared resolved theme.
 # CUSTOMIZATION: Review keybindings before changing them; they are part of the user environment.
-# SECURITY: Copy-mode actions send selected text to the session clipboard.
+# SECURITY: Wayland copying is the default; terminal-only users can keep copies inside tmux.
 
-{ pkgs, theme, ... }:
+{ config, lib, pkgs, theme, ... }:
 
-  {
+{
+  options.ijs.tmux.waylandClipboard.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Copy tmux selections to Wayland; otherwise use only tmux's paste buffer.";
+  };
 
-  programs.tmux = {
+  config.programs.tmux = {
     enable = true;
     historyLimit = 50000;
     mouse = true;
@@ -34,9 +39,17 @@
         # Catappuccin theme
         set -g @catppuccin_flavor "${theme.catppuccinFlavor}"
 
-      # Copy the selection to the Wayland clipboard and leave copy mode.
-      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
-      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
+      ${if config.ijs.tmux.waylandClipboard.enable then ''
+        # Copy the selection to the Wayland clipboard and leave copy mode.
+        bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
+        bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "${pkgs.wl-clipboard}/bin/wl-copy"
+      '' else ''
+        # A terminal-only host has no Wayland clipboard; retain tmux's paste buffer.
+        # Also disable terminal clipboard escape sequences (OSC 52).
+        set -s set-clipboard off
+        bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+        bind-key -T copy-mode-vi Enter send-keys -X copy-selection-and-cancel
+      ''}
     '';
 
     };
