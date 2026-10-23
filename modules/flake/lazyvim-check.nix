@@ -1,5 +1,5 @@
 # PURPOSE: Test the real wrapped editor and HM-generated files in clean homes.
-# CONSUMER: checks.x86_64-linux.lazyvim-offline; no host activation is performed.
+# CONSUMER: lazyvim-offline and lazyvim-lifecycle checks; no host activation.
 # CUSTOMIZATION: Keep this fixture editor-only; assertions live in tests/lazyvim-offline.lua.
 # SECURITY: Temporary child environments and test-only network command guards never
 # modify a real home. Negative cases must fail, including attempted plugin downloads.
@@ -7,19 +7,49 @@
 {
   perSystem = { pkgs, lib, ... }:
     let
-      home = inputs.home-manager.lib.homeManagerConfiguration {
+      makeHome = extraModules: inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          inputs.lazyvim.homeManagerModules.default
           self.modules.homeManager.lazyvim
           {
-            _module.args.theme = (self.ijs.resolveTheme { inherit lib; }) "mocha-purple";
             home.username = "example";
             home.homeDirectory = "/home/example";
             home.stateVersion = "26.05";
           }
-        ];
+        ] ++ extraModules;
       };
+      home = makeHome [ {
+        _module.args.theme = (self.ijs.resolveTheme { inherit lib; }) "mocha-purple";
+      } ];
+      # Existing callers may still import the same upstream path explicitly.
+      legacy = makeHome [ inputs.lazyvim.homeManagerModules.default {
+        _module.args.theme = (self.ijs.resolveTheme { inherit lib; }) "mocha-purple";
+      } ];
+      # No theme argument: disabling must not evaluate editor-specific defaults.
+      disabled = makeHome [ { programs.lazyvim.enable = false; } ];
+      plain = makeHome [ {
+        programs.lazyvim.enable = false;
+        programs.neovim = {
+          enable = true;
+          initLua = "vim.g.ijs_plain_editor = true";
+        };
+      } ];
+      editorFiles = configuration: lib.filter
+        (file: file.enable && (lib.hasPrefix ".config/nvim/" file.target
+          || lib.hasPrefix ".local/share/nvim/" file.target))
+        (lib.attrValues configuration.config.home.file);
+      alternateDirectory = makeHome [ {
+        _module.args.theme = (self.ijs.resolveTheme { inherit lib; }) "mocha-purple";
+        programs.lazyvim.appName = "another-editor";
+      } ];
+      linkFiles = name: configuration: pkgs.writeShellScript name ''
+        # Test only Home Manager's own collision/link phases, not host activation.
+        set -e
+        ${configuration.config.lib.bash.initHomeManagerLib}
+        export VERBOSE_ARG= HOME_MANAGER_BACKUP_EXT= HOME_MANAGER_BACKUP_COMMAND=
+        ${configuration.config.home.activation.checkLinkTargets.data}
+        ${configuration.config.home.activation.linkGeneration.data}
+      '';
       guard = pkgs.writeShellScriptBin "git" ''
         for argument in "$@"; do
           case "$argument" in
@@ -40,11 +70,18 @@
           nativeBuildInputs = [ pkgs.coreutils pkgs.gnugrep ];
         } ''
         # Each invocation starts without any user cache; copy only declared HM files.
-        for mode in good missing misnamed network; do
+        for mode in good existing missing misnamed network; do
           test_home=$(mktemp -d)
           cp -R ${home.config.home-files}/. "$test_home/"
           mkdir -p "$test_home/work" "$test_home/.cache" "$test_home/.local/state"
           attempts="$test_home/network-attempts"
+          if [ "$mode" = existing ]; then
+            mkdir -p "$test_home/.config/nvim" "$test_home/.local/share/nvim/lazy"
+            printf 'keep user configuration\n' > "$test_home/.config/nvim/user-note.txt"
+            printf 'keep user state\n' > "$test_home/.local/share/nvim/user-state.txt"
+            # Old installations may have this bootstrap symlink; never delete it.
+            ln -s ${pkgs.vimPlugins.lazy-nvim} "$test_home/.local/share/nvim/lazy/lazy.nvim"
+          fi
           status=0
           env --chdir="$test_home/work" HOME="$test_home" XDG_CONFIG_HOME="$test_home/.config" \
             XDG_DATA_HOME="$test_home/.local/share" XDG_STATE_HOME="$test_home/.local/state" \
@@ -55,7 +92,7 @@
               '+luafile ${../../tests/lazyvim-offline.lua}' \
               > "$test_home/output" 2>&1 || status=$?
           cat "$test_home/output"
-          if [ "$mode" = good ]; then
+          if [ "$mode" = good ] || [ "$mode" = existing ]; then
             test "$status" = 0
             test ! -s "$attempts"
           else
@@ -65,5 +102,30 @@
         done
         touch "$out"
       '';
+
+      checks.lazyvim-lifecycle =
+        # The pinned legacy file phases respect the disposable HOME below.
+        assert lib.all (c: c.config.home.fileActivator == "legacy") [ home disabled plain ];
+        assert editorFiles disabled == [ ];
+        assert !disabled.config.programs.neovim.enable;
+        assert plain.config.programs.neovim.plugins == [ ];
+        assert plain.config.programs.lazyvim.plugins == { };
+        assert legacy.config.xdg.configFile."nvim/init.lua".text
+          == home.config.xdg.configFile."nvim/init.lua".text;
+        assert !(builtins.tryEval
+          (toString alternateDirectory.config.xdg.configFile."nvim/init.lua".source)).success;
+        pkgs.runCommand "ijs-lazyvim-lifecycle" {
+          nativeBuildInputs = [ pkgs.bash pkgs.coreutils pkgs.findutils pkgs.diffutils pkgs.gettext pkgs.gnugrep ];
+        } ''
+          test_home=$(mktemp -d -t ijs-lazyvim-lifecycle.XXXXXX)
+          env HOME="$test_home" IJS_TEST_HOME="$test_home" \
+            XDG_CONFIG_HOME="$test_home/.config" XDG_DATA_HOME="$test_home/.local/share" \
+            XDG_STATE_HOME="$test_home/.local/state" XDG_CACHE_HOME="$test_home/.cache" \
+            bash ${../../tests/lazyvim-lifecycle.sh} \
+              ${home.activationPackage} ${disabled.activationPackage} ${plain.activationPackage} \
+              ${linkFiles "link-lazyvim" home} ${linkFiles "link-disabled" disabled} ${linkFiles "link-plain" plain} \
+              ${plain.config.programs.neovim.finalPackage}/bin/nvim
+          touch "$out"
+        '';
     };
 }

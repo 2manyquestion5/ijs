@@ -66,6 +66,7 @@ values: private repositories and Nix store paths are not secret vaults.
 
 ## Further reading
 
+- [Selecting, disabling and validating LazyVim](docs/applications/lazyvim.md)
 - [Roadmap and v0.1 validation status](docs/roadmap.md)
 - [Architecture and longer-term direction](docs/architecture.md)
 - [Configuration contracts](docs/contracts.md)

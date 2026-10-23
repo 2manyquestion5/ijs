@@ -20,7 +20,8 @@ local function check()
   end
 
   local function require_ok(condition, message)
-    assert(condition, (mode == "good" and "" or "IJS_REGRESSION: " .. mode .. ": ") .. message)
+    local prefix = (mode == "good" or mode == "existing") and "" or "IJS_REGRESSION: " .. mode .. ": "
+    assert(condition, prefix .. message)
   end
   require_ok(vim.fn.filereadable(vim.env.IJS_NETWORK_ATTEMPTS) == 0, "network installer attempted")
   require_ok(config.options.install.missing == false, "automatic installation enabled")
@@ -56,6 +57,14 @@ local function check()
   require_ok((vim.g.colors_name or ""):match("^catppuccin") ~= nil, "theme could not load")
   require_ok(vim.v.errmsg == "", vim.v.errmsg)
   require_ok(vim.fn.filereadable(vim.env.IJS_NETWORK_ATTEMPTS) == 0, "network installer attempted")
+  if mode == "existing" then
+    local note = vim.fn.readfile(vim.fn.stdpath("config") .. "/user-note.txt")[1]
+    local state = vim.fn.readfile(vim.fn.stdpath("data") .. "/user-state.txt")[1]
+    require_ok(note == "keep user configuration", "user configuration changed")
+    require_ok(state == "keep user state", "user state changed")
+    local legacy = vim.uv.fs_lstat(vim.fn.stdpath("data") .. "/lazy/lazy.nvim")
+    require_ok(legacy and legacy.type == "link", "legacy bootstrap link changed")
+  end
 end
 
 local ok, error_message = xpcall(check, debug.traceback)
@@ -63,6 +72,6 @@ if not ok then
   io.stderr:write(tostring(error_message) .. "\n")
   vim.cmd("cquit 1")
 else
-  print("PASS: clean-home LazyVim startup, Nix plugin paths, completion, snippets and theme")
+  print("PASS: " .. vim.env.IJS_TEST_MODE .. " LazyVim startup, Nix paths, completion, snippets and theme")
   vim.cmd("qa!")
 end

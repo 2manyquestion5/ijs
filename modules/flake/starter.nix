@@ -24,8 +24,6 @@ in {
       };
 
       modules = [
-        inputs.lazyvim.homeManagerModules.default
-
         ../../configurations/users/default
       ];
     };

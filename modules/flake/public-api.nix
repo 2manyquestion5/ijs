@@ -10,7 +10,7 @@
 # Public interfaces remain independent of hostnames and usernames.
 # Personal configuration is supplied by the consuming flake.
 
-{ ... }: {
+{ inputs, ... }: {
 
   # Public helpers used by independent host and user configurations.
   flake.ijs = {
@@ -37,7 +37,13 @@
 
     # Applications and development environment.
     packages = ../../modules/home/programs/packages.nix;
-    lazyvim = ../../modules/home/programs/lazyvim.nix;
+    # One application import includes its upstream options and ijs defaults.
+    lazyvim = {
+      imports = [
+        inputs.lazyvim.homeManagerModules.default
+        ../../modules/home/programs/lazyvim.nix
+      ];
+    };
     tmux = ../../modules/home/programs/tmux.nix;
   };
 }

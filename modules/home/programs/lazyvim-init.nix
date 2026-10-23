@@ -2,6 +2,7 @@
 # CONSUMER: lazyvim.nix supplies this file through Home Manager's native source option.
 # CUSTOMIZATION: Review these checked replacements when updating lazyvim-nix; do not
 # silently accept a changed template. Upstream should own these packaging fixes eventually.
+# REMOVAL: See docs/applications/lazyvim.md for each repair's upstream exit condition.
 # SECURITY: Nix supplies plugins; disable startup installation and Lua-rock provisioning.
 { lib, pkgs, upstreamInit }:
 let
