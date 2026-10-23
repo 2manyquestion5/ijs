@@ -7,7 +7,6 @@ let
   system = "x86_64-linux";
   pkgs = inputs.nixpkgs.legacyPackages.${system};
   userModules = [
-    inputs.lazyvim.homeManagerModules.default
     ../../examples/portability/home.nix
   ];
   standalone = inputs.home-manager.lib.homeManagerConfiguration {

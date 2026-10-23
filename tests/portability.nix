@@ -3,6 +3,19 @@
 # CUSTOMIZATION: Add runtime checks only for behavior this small example promises.
 # SECURITY: The NixOS test harness controls only its disposable guest, not a real workstation.
 { pkgs, vmModules }:
+let
+  # Test-only guard, matching the editor check: expose any attempted Git installer.
+  gitGuard = pkgs.writeShellScriptBin "git" ''
+    for argument in "$@"; do
+      case "$argument" in
+        clone|fetch|pull|ls-remote)
+          printf 'git %s\n' "$*" >> "$IJS_NETWORK_ATTEMPTS"
+          exit 97 ;;
+      esac
+    done
+    exec ${pkgs.git}/bin/git "$@"
+  '';
+in
 pkgs.testers.runNixOSTest {
   name = "ijs-home-portability";
   nodes.machine.imports = vmModules;
@@ -27,7 +40,6 @@ pkgs.testers.runNixOSTest {
     machine.wait_for_unit("register-nix-paths.service")
     machine.succeed("test -L /home/example/.config/tmux/tmux.conf")
     machine.succeed("test -L /home/example/.config/nvim/init.lua")
-    machine.succeed("test -L /home/example/.local/share/nvim/lazy/lazy.nvim")
 
     def as_example(command):
         return machine.succeed("runuser -l example -c " + shlex.quote(command))
@@ -36,13 +48,18 @@ pkgs.testers.runNixOSTest {
     as_example("nix-store --query --requisites /run/current-system > /dev/null")
     for command in ["git --version", "tmux -V", "rg --version", "fd --version"]:
         as_example(command)
-    # Bootstrap failures can wait for a keypress, even in headless mode.
-    # Bound startup and make initialization errors fail the process explicitly.
+    # Reuse the application's regression assertions against this VM user's editor.
+    # The actual wrapper prepends Git to PATH, so restore the guard before init.lua.
+    editor_state = as_example("mktemp -d -t ijs-editor-check.XXXXXX").strip()
     as_example(
+        "IJS_TEST_MODE=good "
+        "IJS_NETWORK_ATTEMPTS=" + shlex.quote(editor_state + "/network-attempts") + " "
+        "IJS_GIT_GUARD=${gitGuard}/bin "
         "timeout --kill-after=5s 60s nvim --headless "
-        "'+lua if vim.fn.exists(\":Lazy\") ~= 2 or vim.v.errmsg ~= \"\" "
-        "then vim.cmd(\"cquit 1\") end' +qa"
+        "--cmd 'lua vim.env.PATH = vim.env.IJS_GIT_GUARD .. \":\" .. vim.env.PATH' "
+        "'+luafile ${./lazyvim-offline.lua}'"
     )
+    as_example("test ! -s " + shlex.quote(editor_state + "/network-attempts"))
     assert "copy-selection-and-cancel" in as_example(
         "cat ~/.config/tmux/tmux.conf"
     )
