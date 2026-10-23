@@ -67,6 +67,7 @@ values: private repositories and Nix store paths are not secret vaults.
 ## Further reading
 
 - [Experimental user environment: standalone Home Manager and a development VM](examples/portability/README.md)
+- [Selecting, disabling and validating LazyVim](docs/applications/lazyvim.md)
 - [Roadmap and v0.1 validation status](docs/roadmap.md)
 - [Architecture and longer-term direction](docs/architecture.md)
 - [Configuration contracts](docs/contracts.md)

@@ -79,6 +79,11 @@ These directions do not block the initial Hyprland deployment:
   workspace/network boundaries need concrete examples and enforcement tests.
 - Session negotiation is a design prototype. Cross-host authentication,
   provisioning and orchestration remain research directions.
+- Investigate read-only application lifecycle visibility using Home Manager
+  generations and filesystem metadata. Distinguish former managed files, known
+  caches/state and uncertain ownership. Unmanaged files are never presumed safe
+  to delete; any future keep/archive/remove action requires an explicit choice.
+  No inspector or cleanup automation is implemented.
 
 Prefer application and Home Manager features over custom services where they
 meet the need. Extend the architecture through small working examples, rather
