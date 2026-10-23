@@ -20,6 +20,8 @@ secrets/
 private/
 /hosts/*/storage-local.nix
 /hosts/*/hardware-configuration.nix
+/configurations/hosts/*/storage-local.nix
+/configurations/hosts/*/hardware-configuration.nix
 # VM images are never source-controlled
 *.qcow2
 *.raw

@@ -91,7 +91,7 @@
             IJS_TEST_MODE="$mode" IJS_NETWORK_ATTEMPTS="$attempts" IJS_GIT_GUARD="${guard}/bin" \
             timeout --kill-after=5s 60s ${home.config.programs.neovim.finalPackage}/bin/nvim \
               --headless --cmd 'lua vim.env.PATH = vim.env.IJS_GIT_GUARD .. ":" .. vim.env.PATH' \
-              '+luafile ${../../tests/lazyvim-offline.lua}' \
+              '+luafile ${../../../tests/lazyvim-offline.lua}' \
               > "$test_home/output" 2>&1 || status=$?
           cat "$test_home/output"
           if [ "$mode" = good ] || [ "$mode" = existing ]; then
@@ -123,7 +123,7 @@
           env HOME="$test_home" IJS_TEST_HOME="$test_home" \
             XDG_CONFIG_HOME="$test_home/.config" XDG_DATA_HOME="$test_home/.local/share" \
             XDG_STATE_HOME="$test_home/.local/state" XDG_CACHE_HOME="$test_home/.cache" \
-            bash ${../../tests/lazyvim-lifecycle.sh} \
+            bash ${../../../tests/lazyvim-lifecycle.sh} \
               ${home.activationPackage} ${disabled.activationPackage} ${plain.activationPackage} \
               ${linkFiles "link-lazyvim" home} ${linkFiles "link-disabled" disabled} ${linkFiles "link-plain" plain} \
               ${plain.config.programs.neovim.finalPackage}/bin/nvim

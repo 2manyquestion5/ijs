@@ -1,6 +1,6 @@
 # PURPOSE: Provide a disposable, terminal-only host for the portability example.
 # CONSUMER: The development-vm output and its NixOS test; never import on real hardware.
-# CUSTOMIZATION: VM resources and guest-only policy belong here; user tools live in home.nix.
+# CUSTOMIZATION: Guest policy belongs here; user tools live in configurations/users/terminal.
 # SECURITY: Console autologin is for this local experiment only. The guest has restricted
 # networking, no forwarded ports, no admin groups and no shared host directories or store.
 { lib, modulesPath, ... }:

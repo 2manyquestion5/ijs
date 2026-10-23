@@ -14,6 +14,8 @@ Nix module composition and a Hyprland + Waybar Home Manager starter.
 - Reusable NixOS and Home Manager modules, plus preference and theme helpers.
 - A minimal desktop example with Hyprland, Waybar, Firefox, Foot, Fuzzel,
   Dolphin, Git, LazyVim, tmux and basic desktop utilities.
+- A terminal-only development VM and a physical-host template that identifies
+  the hardware, boot and account settings you must supply.
 - Additional application modules that consumers can select separately. The
   starter does **not** import the larger `packages` collection containing
   GitHub CLI, Yazi and archive tools. Tools available inside an application's
@@ -59,10 +61,13 @@ needs. Exporting a module only makes it available. Importing it contributes
 configuration; evaluation and building prepare the result, and activation
 applies it to a system or home environment.
 
-Start with the [architecture](docs/architecture.md) for ownership and composition,
-then the [technical contracts](docs/contracts.md) for exported interfaces and
-preference examples. Keep credentials outside plaintext Git and ordinary Nix
-values: private repositories and Nix store paths are not secret vaults.
+Start with [configuration examples](configurations/README.md) and the
+[physical-host template guide](configurations/hosts/example/README.md) to create
+your own consuming flake. Reusable implementation lives in `infrastructure/`;
+`configurations/` demonstrates host and user selections. The
+[architecture](docs/architecture.md) and [technical contracts](docs/contracts.md)
+explain deeper interfaces. Keep credentials outside plaintext Git and ordinary
+Nix values: private repositories and Nix store paths are not secret vaults.
 
 ## Further reading
 

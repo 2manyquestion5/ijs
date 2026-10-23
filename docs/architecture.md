@@ -29,26 +29,33 @@ The project separates public infrastructure from installation-specific configura
 
 ```text
 ijs/
+├── infrastructure/
+│   ├── modules/               # NixOS, Home Manager and flake composition
+│   ├── features/              # Optional capability implementations
+│   ├── roles/                 # Host-side capability bundles
+│   ├── lib/                   # Translators, helpers and resolution logic
+│   └── themes/                # Reusable appearance definitions
 ├── configurations/
-│   └── users/default/         # Buildable Home Manager starter
-├── modules/
-│   ├── flake/                 # Public exports and example outputs
-│   ├── nixos/                 # Shared system modules
-│   └── home/                  # Shared user and desktop modules
-├── features/                  # Optional capabilities
-├── roles/                     # Host-side capability bundles
+│   ├── users/default/         # Buildable desktop Home Manager example
+│   ├── users/terminal/        # User environment shared by both HM modes
+│   ├── hosts/development-vm/  # Buildable disposable terminal VM
+│   └── hosts/example/         # Physical-host template; requires machine settings
 ├── profiles/                  # User-profile concepts and documentation
-├── lib/                       # Translators, helpers and resolution logic
-├── themes/                    # Reusable appearance definitions
-├── examples/                  # Architecture examples
+├── examples/                  # Experiment guides and negotiation example
+├── tests/                     # Application and VM regression tests
 ├── docs/
 ├── flake.nix
 └── README.md
 ```
 
-The directories `modules/`, `features/`, `roles/`, `lib/`, and `themes/` collectively form ijs's reusable infrastructure.
+`infrastructure/` owns reusable implementation, including application packaging
+and compatibility handling. `configurations/` selects that implementation using
+ordinary NixOS and Home Manager modules. There is no configuration generator or
+additional profile language.
 
-The public repository also provides starter configurations so contributors can evaluate and build examples without possessing anyone's private machine configuration.
+The [configuration guide](../configurations/README.md) distinguishes buildable
+examples from the incomplete physical-host template. These are generic public
+selections, not copies of a maintainer's private configuration.
 
 ### Installation-specific repository
 
@@ -77,6 +84,10 @@ Actual secrets must remain outside plaintext Git and ordinary Nix configuration 
 
 The consuming flake declares ijs as an input and selects its exported modules
 and helper functions. It does not need to copy public implementations.
+The [host template guide](../configurations/hosts/example/README.md) shows a
+minimal consumer whose configuration files it owns while following ijs's pinned
+Nixpkgs and Home Manager inputs. The public project never needs a reference to
+that consumer's private repository.
 
 No reusable module should depend on a specific personal repository name, hostname, username, or source directory.
 
@@ -125,6 +136,10 @@ configuration. Evaluation resolves those declarations, building prepares the
 artifacts, and activation applies them; these are separate steps.
 
 These examples assume the public flake is named `ijs` in the consuming flake's inputs.
+The `modules.nixos.*`, `modules.homeManager.*` and `ijs.*` interfaces, existing
+Home Manager outputs and `development-vm` output are preserved by the directory
+reorganization. Direct imports from the former root implementation paths need
+updating; use exported modules rather than depending on that internal layout.
 See [technical contracts](contracts.md) for the helper signatures and composition
 examples. NixOS, Home Manager and flake-parts modules have different contexts and
 are not interchangeable.
@@ -215,8 +230,9 @@ identify the actual mechanism, trust assumptions and tests. Prefer existing
 Linux, NixOS, Home Manager, SSH and virtualization facilities before adding custom
 infrastructure.
 
-The existing virtualization modules provide host capabilities, not reproducible
-guest provisioning. The negotiation example is a pure compatibility prototype
+The existing virtualization modules provide host capabilities. The separate
+development VM is a concrete QEMU example, not a general guest-provisioning
+system. The negotiation example is a pure compatibility prototype
 over declared inputs, not runtime resource allocation, authentication or policy
 enforcement. See the [session negotiation design](session-negotiation.md) for its
 experimental scope.

@@ -24,7 +24,7 @@ in {
       };
 
       modules = [
-        ../../configurations/users/default
+        ../../../configurations/users/default
       ];
     };
 }

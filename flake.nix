@@ -1,5 +1,7 @@
 # PURPOSE: Pin and compose the infrastructure's reproducible dependencies.
 # flake-parts keeps host/user output declarations outside this entry point.
+# CUSTOMIZATION: Select examples through infrastructure/modules/flake.
+# SECURITY: Exporting and building configurations does not activate them.
 {
   description = "ijs - portable Nix infrastructure";
   inputs = {
@@ -15,11 +17,11 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.flake-parts.flakeModules.modules
-        ./modules/flake/registry.nix
-        ./modules/flake/public-api.nix
-        ./modules/flake/starter.nix
-        ./modules/flake/lazyvim-check.nix
-        ./modules/flake/portability.nix
+        ./infrastructure/modules/flake/registry.nix
+        ./infrastructure/modules/flake/public-api.nix
+        ./infrastructure/modules/flake/starter.nix
+        ./infrastructure/modules/flake/lazyvim-check.nix
+        ./infrastructure/modules/flake/portability.nix
       ];
       systems = [ "x86_64-linux" ];
     };
