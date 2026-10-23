@@ -72,7 +72,9 @@
         # Each invocation starts without any user cache; copy only declared HM files.
         for mode in good existing missing misnamed network; do
           test_home=$(mktemp -d)
-          cp -R ${home.config.home-files}/. "$test_home/"
+          # Keep declared symlinks, but not the store directories' read-only modes.
+          # In particular, .cache/.keep must not make the test user's cache read-only.
+          cp -R --no-preserve=mode ${home.config.home-files}/. "$test_home/"
           mkdir -p "$test_home/work" "$test_home/.cache" "$test_home/.local/state"
           attempts="$test_home/network-attempts"
           if [ "$mode" = existing ]; then
