@@ -69,8 +69,8 @@ This module introduces no cleanup command and no system-wide network restriction
 
 These apply to `pfassina/lazyvim-nix` revision `2189337` and LazyVim v16.0.1.
 The implementation is local to
-[lazyvim.nix](../../modules/home/programs/lazyvim.nix) and
-[lazyvim-init.nix](../../modules/home/programs/lazyvim-init.nix).
+[lazyvim.nix](../../infrastructure/modules/home/programs/lazyvim.nix) and
+[lazyvim-init.nix](../../infrastructure/modules/home/programs/lazyvim-init.nix).
 
 | Problem | Repair | Removal condition |
 |---|---|---|

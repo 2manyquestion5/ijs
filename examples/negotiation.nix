@@ -5,7 +5,7 @@
 # Run: nix --extra-experimental-features 'nix-command flakes' eval --impure --json --expr 'import ./examples/negotiation.nix'
 let
   flake = builtins.getFlake (toString ../.);
-  negotiate = import ../lib/negotiation { lib = flake.inputs.nixpkgs.lib; };
+  negotiate = import ../infrastructure/lib/negotiation { lib = flake.inputs.nixpkgs.lib; };
 in negotiate {
   request = { allowedModes = [ "vm" "terminal" ]; minMemoryMiB = 16384; forbidNonfreeHost = true; };
   host = { supportedModes = [ "native" "terminal" ]; freeMemoryMiB = 8192; requiresNonfree = false; };

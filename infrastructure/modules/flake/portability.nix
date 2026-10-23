@@ -1,13 +1,14 @@
 # PURPOSE: Compose the same user module through standalone and integrated Home Manager.
 # CONSUMERS: Public examples and focused checks, independent of personal configurations.
-# CUSTOMIZATION: Edit examples/portability for tools or guest policy; no profile engine is used.
+# CUSTOMIZATION: Edit tools in configurations/users/terminal and guest policy in
+# configurations/hosts/development-vm; no profile engine is used.
 # SECURITY: Building outputs never activates them on the host. The VM is not an installer.
 { inputs, self, lib, ... }:
 let
   system = "x86_64-linux";
   pkgs = inputs.nixpkgs.legacyPackages.${system};
   userModules = [
-    ../../examples/portability/home.nix
+    ../../../configurations/users/terminal
   ];
   standalone = inputs.home-manager.lib.homeManagerConfiguration {
     inherit pkgs;
@@ -19,7 +20,7 @@ let
   };
   vmModules = [
     inputs.home-manager.nixosModules.home-manager
-    ../../examples/portability/vm.nix
+    ../../../configurations/hosts/development-vm
     {
       home-manager = {
         useGlobalPkgs = true;
@@ -60,10 +61,10 @@ in
             standalone.config.xdg.configFile."tmux/tmux.conf".text;
         } ''
           export SHELL=${pkgs.runtimeShell}
-          bash ${../../tests/tmux-clipboard.sh} "$waylandConfig" "$terminalConfig"
+          bash ${../../../tests/tmux-clipboard.sh} "$waylandConfig" "$terminalConfig"
           touch "$out"
         '';
-        portability-vm = import ../../tests/portability.nix { inherit pkgs vmModules; };
+        portability-vm = import ../../../tests/portability.nix { inherit pkgs vmModules; };
       };
     };
   };

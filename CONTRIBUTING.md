@@ -44,6 +44,11 @@ explicit commits, pushes and fetches.
 
 ## Validate what changed
 
+Reusable implementation belongs in `infrastructure/`; generic host/user
+compositions belong in `configurations/`. Keep tests at `tests/` and general
+guides in `docs/`. Use the public module exports in consuming configurations,
+and see the [configuration guide](configurations/README.md) for examples.
+
 For configuration changes, start with evaluation of the public example, from
 the repository root:
 

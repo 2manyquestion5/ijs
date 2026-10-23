@@ -1,6 +1,7 @@
 # One user environment, two Home Manager modes
 
-This experimental example selects the same [user environment](home.nix) through
+This experimental example selects the same
+[user environment](../../configurations/users/terminal/default.nix) through
 standalone Home Manager and through Home Manager's standard NixOS integration.
 It reuses ijs's LazyVim and tmux modules and adds Git, ripgrep and fd. These five
 commands are available in the user's terminal: `git`, `nvim`, `tmux`, `rg`, `fd`.
@@ -94,23 +95,22 @@ operation. The editor's separate checks cover clean/existing homes and managed
 file transitions without activating the host.
 A successful evaluation or build alone does not demonstrate that the VM booted.
 
-Earlier local runs confirmed VM boot, Home Manager activation and CLI version
-checks after correcting the read-only guest store, but editor startup failed.
-The application repair merged in PR #10 subsequently passed maintainer-reported
-local editor runtime/lifecycle checks and the public Home Manager starter build.
-This example now selects that repaired public module. A complete successful VM
-test of this integration is still pending; cloud builds remain limited by the
-relocated store and KVM is unavailable there. Evaluation is not a completed build
-or VM run. The editor test has a timeout, and service status/journals are printed
-if Home Manager activation fails.
+Before merging PR #9 (`d027fa3`), the maintainer reported successful local builds
+and focused checks, including the restricted-network VM test. PR #10 supplied
+the repaired application integration selected by this example. That evidence
+applies to the tested revision; moving these files requires fresh validation.
+Cloud builds remain limited by the relocated store, and KVM is unavailable
+there. Evaluation is not a completed build or VM run. The editor test has a
+timeout, and service status/journals are printed if Home Manager activation fails.
 
 ## How composition works
 
-[The output wiring](../../modules/flake/portability.nix) passes one list of user
-modules to both `homeManagerConfiguration.modules` and
+[The output wiring](../../infrastructure/modules/flake/portability.nix) passes
+one list of user modules to both `homeManagerConfiguration.modules` and
 `home-manager.sharedModules`. Both receive `ijs` through Home Manager's standard
 extra arguments. The standalone wrapper supplies the account name and home;
-the integrated version gets them from the [NixOS guest account](vm.nix).
+the integrated version gets them from the
+[NixOS guest account](../../configurations/hosts/development-vm/default.nix).
 The integrated example uses the host package set and NixOS user-package support.
 Both select the same tools and generate the same editor and tmux configuration;
 their activation scripts and support packages can differ between deployment modes.

@@ -18,7 +18,7 @@
 #
 # CUSTOMIZATION:
 #   Add applications to the appropriate category below.
-#   Host maintenance tools belong in modules/nixos/maintenance.nix.
+#   Host maintenance tools belong in infrastructure/modules/nixos/maintenance.nix.
 #
 # NOTE:
 #   This V1 list is installed eagerly by Home Manager.

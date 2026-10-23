@@ -83,13 +83,15 @@ implementation and validation status.
 
 | Term | Meaning |
 |---|---|
-| **modules/** | Reusable Nix configuration implementations. |
-| **hosts/** | Machine-specific compositions and hardware configurations. |
-| **users/** | Personal account definitions, preferences, and requirements. |
-| **roles/** | Host-oriented capability selections. |
+| **infrastructure/** | Reusable modules, features, roles, themes and supporting functions. |
+| **configurations/** | Generic examples of the host and user selections a consuming repository owns. |
+| **infrastructure/modules/** | Reusable NixOS, Home Manager and flake implementations. |
+| **configurations/hosts/** | Public host examples: a buildable VM and an incomplete physical-host template. |
+| **configurations/users/** | Public example user environments and preferences. |
+| **infrastructure/roles/** | Host-oriented capability selections. |
 | **profiles/** | Documentation of planned user-side selections; no general profile-selection implementation yet. |
-| **themes/** | Reusable appearance definitions and palettes. |
-| **lib/** | Shared functions, translators, and helpers. |
+| **infrastructure/themes/** | Reusable appearance definitions and palettes. |
+| **infrastructure/lib/** | Shared functions, translators, and helpers. |
 | **docs/** | Architecture, installation, security, and contributor documentation. |
 | **AGENTS.md** | Instructions and conventions for coding assistants and contributors. |
 | **CONTRIBUTING.md** | Practical development, validation and publication workflow. |

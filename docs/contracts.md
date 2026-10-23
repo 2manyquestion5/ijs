@@ -51,6 +51,9 @@ flake.modules.homeManager.<name>
 ```
 
 Consumers access them through the ijs flake input.
+Reusable source lives under `infrastructure/`; consumers should use these
+exports instead of importing internal repository paths. Generic host and user
+compositions live under [`configurations/`](../configurations/README.md).
 
 For example:
 

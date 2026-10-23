@@ -11,8 +11,8 @@ express non-negotiable restrictions. A pre-provisioning match must return
 structured, human-readable reasons on rejection. The user may later be offered
 alternatives, but no mandatory security requirement is relaxed automatically.
 
-The pure prototype at `lib/negotiation/default.nix` checks session-mode overlap,
-minimum available memory, and one software-freedom condition. It is a **design
+The pure prototype at `infrastructure/lib/negotiation/default.nix` checks
+session-mode overlap, minimum available memory, and one software-freedom condition. It is a **design
 probe only** and does not allocate a VM, authenticate users, measure free RAM
 at runtime, lazily install applications, or prove remote host integrity.
 
